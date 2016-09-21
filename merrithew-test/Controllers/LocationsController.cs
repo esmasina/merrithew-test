@@ -20,8 +20,8 @@ namespace merrithew_test.Controllers
         // GET: api/Locations
         public IEnumerable<Location> Get(string lat, string lng, string radius)
         {
-            return _repo.GetLocations(lat, lng, radius);
+            var result = _repo.GetLocations(lat, lng, radius);
+            return result;
         }
-
     }
 }

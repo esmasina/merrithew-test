@@ -8,7 +8,6 @@
         var markers = [];
 
         $(document).ready(function () {
-            //$('#loading').stop().html('<img src="@Url.Content("~/img/loading.gif")" /><span>Fetching data...</span>').fadeIn(1000);
             $('#map').css('height', $(window).height() - 50);
 
             $(window).resize(function () {
@@ -95,35 +94,42 @@
             //$.get(location.protocol + '//' + location.host + '/api/locations', function (data, status) {
             //    console.log(data);
             //});
+            //console.log('fetching' + this);
             $.ajax({
-                //url: location.protocol + '//' + location.host + '/api/locations',
+                datatype: "json",
+                type: "Get",
+                url: location.protocol + '//' + location.host + '/api/locations',
                 data: {
                     lat: lat,
                     lng: lng,
                     radius: radius
                 },
-                beforeSend: function () { 
+                
+                beforeSend: function () {
                     $('#loading').stop().html('<img src="@Url.Content("~/img/loading.gif")" /><span>Fetching data...</span>').fadeIn(1000);
                 },
                 success: function (response) {
+                    
                     //loading gif
                     $('#loading').fadeOut(1000);
                     try {
-                        var results = $.parseJSON(response);
+                        //var results = $.parseJSON(response);
+                        var results = response;
+                        //console.log(results);
 
-                        //loop through each location in the array
-                        $.each(results, function (index, location) {
+                        $.each(results, function (index, data) {
+                            
                             var geocode = {
-                                lat: location.Latitude,
-                                lng: location.Longitude
+                                lat: data.Lat,
+                                lng: data.Long
                             };
 
                             var info = {
-                                name: location.LocationName,
-                                address: location.Address,
-                                phone: location.Phone
+                                name: data.LocationName,
+                                address: data.Address,
+                                phone: data.Phone
                             }
-
+                            //console.log(geocode, info);
                             add_marker(geocode, info);
                         });
 
@@ -142,7 +148,6 @@
 
             var marker = new google.maps.Marker(markerOptions);
 
-            //---------------------- TODO: STYLE THE INFOWINDOW -----------------------------
             var contentString = "<div><h5>" + info.name + "</h5><p>" + info.address + " <br /> " + info.phone + "</p></div>";
 
             var infoWindow = new google.maps.InfoWindow({
@@ -165,8 +170,8 @@
             if (typeof markers !== 'undefined' && markers.length > 0) {
                 for (var i = 0; i < markers.length; i++) {
                     markers[i].setMap(null);
-                    markers = [];
                 }
+                    markers = [];
             }
 
         }

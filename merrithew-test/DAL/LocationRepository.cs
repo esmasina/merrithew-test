@@ -17,17 +17,14 @@ namespace merrithew_test.DAL
 
         public IEnumerable<Location> GetLocations(string lat, string lng, string radius)
         {
+            double rad = 1000; //default (meters)
+            Double.TryParse(radius, out rad);
+            string position = string.Format("POINT({0} {1})", lng, lat);
+            DbGeography origin = DbGeography.PointFromText(position, 4326);
             using (context)
             {
-                double rad = 1000; //default (meters)
-                Double.TryParse(radius, out rad);
-                string position = string.Format("POINT({0} {1})", lng, lat);
-                DbGeography origin = DbGeography.PointFromText(position, 4326);
-                IEnumerable<Location> locations = from s in context.Locations
-                                                  where s.Geocode.Distance(origin) <= rad
-                                                  select s;
-                //return context.Locations.ToList();
-                return locations; 
+                IEnumerable<Location> locations = context.Locations.Where(x => x.Geocode.Distance(origin) <= rad).ToList();
+                return locations;
             }
         }
 
