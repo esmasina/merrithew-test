@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 namespace merrithew_test.DAL
 {
-    public interface ILocationRepository /*: IDisposable*/
+    public interface ILocationRepository : IDisposable
     {
         IEnumerable<Location> GetLocations();
-        void InsertLocations(List<Location> locations);
-        //void Save();
+        bool InsertLocations(List<Location> locations);
+        void Save();
     }
 }

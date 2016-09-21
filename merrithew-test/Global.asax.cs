@@ -1,5 +1,7 @@
-﻿using System;
+﻿using merrithew_test.DAL;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
@@ -18,6 +20,9 @@ namespace merrithew_test
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            //for dev
+            Database.SetInitializer<LocationContext>(new DropCreateDatabaseIfModelChanges<LocationContext>());
         }
     }
 }
