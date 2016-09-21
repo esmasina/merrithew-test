@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Web;
 
@@ -18,6 +19,6 @@ namespace merrithew_test.Models
         public string Notes { get; set; }
         public decimal Lat { get; set; }
         public decimal Long { get; set; }
-
+        public DbGeography Geocode { get; set; }
     }
 }

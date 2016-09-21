@@ -8,6 +8,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using System.IO;
+using System.Data.Entity.Spatial;
 
 namespace merrithew_test.Controllers
 {
@@ -69,6 +70,8 @@ namespace merrithew_test.Controllers
                     loc.Notes = values[7];
                     loc.Lat = Convert.ToDecimal(values[8]);
                     loc.Long = Convert.ToDecimal(values[9]);
+                    string position = string.Format("POINT({0} {1})", loc.Long, loc.Lat); //construct dbgeography point from lat/lng
+                    loc.Geocode = DbGeography.PointFromText(position, 4326);
 
                     Locations.Add(loc);
                 }

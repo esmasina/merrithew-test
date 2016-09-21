@@ -18,9 +18,9 @@ namespace merrithew_test.Controllers
             this._repo = new LocationRepository(new LocationContext());
         }
         // GET: api/Locations
-        public IEnumerable<Location> Get()
+        public IEnumerable<Location> Get(string lat, string lng, string radius)
         {
-            return _repo.GetLocations();
+            return _repo.GetLocations(lat, lng, radius);
         }
 
     }

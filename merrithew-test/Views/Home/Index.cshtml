@@ -20,14 +20,11 @@
                 lng: -79.392484
             };
 
-            //function initMap () {
-                //setup default map
-                load_map(position);
+            //setup default map
+            load_map(position);
 
-                //centre of user's location
-                initiate_geolocation();
-
-            //}
+            //centre of user's location
+            initiate_geolocation();
         });
 
         function load_map(position) {
@@ -40,13 +37,48 @@
 
             map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-            get_locations();
+            //get locations in current bounds after panning/zooming
+            google.maps.event.addListener(map, 'idle', function () {
+
+                // Clear previous markers
+                clear_markers();
+
+                // Get the bounds of the viewable region (in miles)
+                var bounds = map.getBounds();
+
+                var center = bounds.getCenter();
+                var ne = bounds.getNorthEast();
+
+                // Radius of the earth in statute miles
+                var r = 3963.0;
+
+                // Convert lat or lng from decimal degrees to radians by dividing by 57.2958
+                var lat1 = center.lat() / 57.2958;
+                var lon1 = center.lng() / 57.2958;
+                var lat2 = ne.lat() / 57.2958;
+                var lon2 = ne.lng() / 57.2958;
+
+                // Calculate the distance of the radius (center to Northeast corner of its bounds)
+                var radius = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
+                //miles to meters
+                radius = radius * 1609.34;
+
+                // Center of the map
+                var position = map.getCenter();
+                //position = position.lat() + "," + position.lng();
+                var lat = position.lat();
+                var lng = position.lng();
+                get_locations(lat, lng, radius);
+            });
+            //get_locations();
 
         }
 
         // Get the end-user's geolocation (new HTML5 feature)
         function initiate_geolocation() {
-            navigator.geolocation.getCurrentPosition(handle_geolocation_query);
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(handle_geolocation_query);
+            } else { alert('Geolocation is not supported by this browser.'); }
         }
 
         function handle_geolocation_query(position) {
@@ -57,10 +89,42 @@
         }
 
         // AJAX request to our web api
-        function get_locations() {
+        function get_locations(lat, lng, radius) {
 
-            $.get(location.protocol + '//' + location.host + '/api/locations', function (data, status) {
-                console.log(data);
+            //$.get(location.protocol + '//' + location.host + '/api/locations', function (data, status) {
+            //    console.log(data);
+            //});
+            $.ajax({
+                url: location.protocol + '//' + location.host + '/api/locations',
+                data: {
+                    lat: lat,
+                    lng: lng,
+                    radius: radius
+                },
+                //beforeSend: function () { LOADING GIF }
+                success: function (response) {
+                    //DISABLE LOADING GIF
+                    try {
+                        var results = $.parseJSON(response);
+
+                        //loop through each location in the array
+                        $.each(results, function (index, location) {
+                            var geocode = {
+                                lat: location.Latitude,
+                                lng: location.Longitude
+                            };
+
+                            var info = {
+                                name: location.LocationName,
+                                address: location.Address,
+                                phone: location.Phone
+                            }
+
+                            add_marker(geocode, info);
+                        });
+
+                    } catch (e) { }
+                }
             });
         }
 
@@ -75,7 +139,7 @@
             var marker = new google.maps.Marker(markerOptions);
 
             //---------------------- TODO: STYLE THE INFOWINDOW -----------------------------
-            var contentString = "<div><h5>" + info.bands.join(', ') + "</h5><p>" + info.date + " <br /> " + info.venue + "</p></div>";
+            var contentString = "<div><h5>" + info.name + "</h5><p>" + info.address + " <br /> " + info.phone + "</p></div>";
 
             var infoWindow = new google.maps.InfoWindow({
                 content: contentString,
