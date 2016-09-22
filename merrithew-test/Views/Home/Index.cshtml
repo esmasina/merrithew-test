@@ -1,11 +1,12 @@
 ﻿<div id="loading"></div>
 <div id="map"></div>
 @section scripts{
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbY2q45aZxAJApBFC4vtels--H-1bGEQw"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbY2q45aZxAJApBFC4vtels--H-1bGEQw&libraries=geometry"></script>
     <script>
         //global markers array
         var map;
         var markers = [];
+        var closest;
 
         $(document).ready(function () {
             $('#map').css('height', $(window).height() - 50);
@@ -25,6 +26,7 @@
 
             //centre of user's location
             initiate_geolocation();
+
         });
 
         function load_map(position) {
@@ -42,7 +44,7 @@
 
                 // Clear previous markers
                 clear_markers();
-
+                
                 // Get the bounds of the viewable region (in miles)
                 var bounds = map.getBounds();
 
@@ -60,17 +62,20 @@
 
                 // Calculate the distance of the radius (center to Northeast corner of its bounds)
                 var radius = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
+
                 //miles to meters
                 radius = radius * 1609.34;
 
                 // Center of the map
                 var position = map.getCenter();
-                //position = position.lat() + "," + position.lng();
+
                 var lat = position.lat();
                 var lng = position.lng();
+
                 get_locations(lat, lng, radius);
+                
+                
             });
-            //get_locations();
 
         }
 
@@ -91,10 +96,6 @@
         // AJAX request to our web api
         function get_locations(lat, lng, radius) {
 
-            //$.get(location.protocol + '//' + location.host + '/api/locations', function (data, status) {
-            //    console.log(data);
-            //});
-            //console.log('fetching' + this);
             $.ajax({
                 datatype: "json",
                 type: "Get",
@@ -113,11 +114,8 @@
                     //loading gif
                     $('#loading').fadeOut(1000);
                     try {
-                        //var results = $.parseJSON(response);
-                        var results = response;
-                        //console.log(results);
 
-                        $.each(results, function (index, data) {
+                        $.each(response, function (index, data) {
                             
                             var geocode = {
                                 lat: data.Lat,
@@ -129,10 +127,10 @@
                                 address: data.Address,
                                 phone: data.Phone
                             }
-                            //console.log(geocode, info);
+
                             add_marker(geocode, info);
                         });
-
+                        find_closest_marker();
                     } catch (e) { }
                 }
             });
@@ -148,15 +146,15 @@
 
             var marker = new google.maps.Marker(markerOptions);
 
+            markers.push(marker);
+
             var contentString = "<div><h5>" + info.name + "</h5><p>" + info.address + " <br /> " + info.phone + "</p></div>";
 
             var infoWindow = new google.maps.InfoWindow({
                 content: contentString,
                 maxWidth: 250
             });
-
-            markers.push(marker);
-
+            
             marker.addListener('click', function () {
                 infoWindow.open(map, marker);
             });
@@ -170,10 +168,31 @@
             if (typeof markers !== 'undefined' && markers.length > 0) {
                 for (var i = 0; i < markers.length; i++) {
                     markers[i].setMap(null);
+                    markers[i] = null;
                 }
-                    markers = [];
+                markers = [];
             }
 
+        }
+
+        function find_closest_marker() {
+            var closest = [];
+            var center = map.getCenter();
+
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].distance = google.maps.geometry.spherical.computeDistanceBetween(center, markers[i].getPosition());
+                closest.push(markers[i]);
+            };
+
+            if(closest.length > 0)
+                closest.sort(sort_by_distance);
+
+            google.maps.event.trigger(closest[0], 'click');
+        }
+
+        function sort_by_distance(a, b)
+        {
+            return (a.distance - b.distance);
         }
     </script>
 }

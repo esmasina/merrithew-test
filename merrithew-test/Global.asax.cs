@@ -23,6 +23,9 @@ namespace merrithew_test
 
             //for dev
             Database.SetInitializer<LocationContext>(new DropCreateDatabaseIfModelChanges<LocationContext>());
+
+            //sql server types for DbGeography
+            //SqlServerTypes.Utilities.LoadNativeAssemblies(Server.MapPath("~/bin"));
         }
     }
 }

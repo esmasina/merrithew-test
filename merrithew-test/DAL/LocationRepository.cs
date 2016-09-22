@@ -23,8 +23,9 @@ namespace merrithew_test.DAL
             DbGeography origin = DbGeography.PointFromText(position, 4326);
             using (context)
             {
-                IEnumerable<Location> locations = context.Locations.Where(x => x.Geocode.Distance(origin) <= rad).ToList();
-                return locations;
+                //IEnumerable<Location> locations = context.Locations.Where(x => x.Geocode.Distance(origin) <= rad).ToList();
+                //return locations;
+                return context.Locations.ToList();
             }
         }
 
